@@ -15,33 +15,48 @@ function mainMenu() {
 
             choices: [{
                 name: "View ALL Employees",
-                value: "VIEW_EMPLOYEES"
+                value: "View_Employees"
             },
             {
                 name: "View All Departments",
-                value: "VIEW_DEPARTMENTS"
+                value: "View_Departments"
+            },
+            {
+                name: "View ALL Roles",
+                value: "View_Roles"
             },
             {
                 name: 'Add an Employee',
-                value: 'ADD_EMPLOYEE'
+                value: 'Add_Employee'
+            },
+            {
+                name: 'Add a role',
+                value: 'Add_Role'
             },
             {
                 NAME: "Quit",
-                value: "QUIT"
+                value: "Quit"
             }]
         }
     ]).then(res => {
         let choices = res.choice;
         switch (choices) {
-            case 'VIEW_EMPLOYEES':
+            case 'View_Employees':
                 findEmployees();
                 break;
-            case 'VIEW_DEPARTMENTS':
+            case 'View_Departments':
                 findDepartments();
                 break;
-            case 'ADD_EMPLOYEE':
+            case 'View_Roles':
+                findRoles();
+                break;
+            case 'Add_Employee':
                 addEmployee();
                 break;
+            case 'Add_Role':
+                addRole();
+                break;
+
         }
 
     })
@@ -64,7 +79,7 @@ function findEmployees() {
 }
 
 function findDepartments() {
-    db.query(`SELECT * FROM department;`, (err, res) => {
+    db.query(`SELECT * FROM employees.department;`, (err, res) => {
         if (err) {
             console.log(err);
         }
@@ -74,8 +89,17 @@ function findDepartments() {
     })
 }
 
+function findRoles() {
+    db.query(`SELECT * FROM employees.role;`, (err, res) => {
+        if (err) { console.log(err); }
+
+        console.log('\n');
+        console.table(res);
+        mainMenu()
+    })
+}
 function addEmployee() {
-    let role = db.query(`SELECT * FROM employees.role`, (err, res) => {
+    db.query(`SELECT * FROM employees.role`, (err, res) => {
         if (err) { console.log(err) };
 
         prompt([
@@ -115,9 +139,55 @@ function addEmployee() {
     })
 }
 
-function addDepartment(){
+function addRole() {
+    db.query(`SELECT * FROM employees.department`, (err, res) => {
+
+        if (err) { console.log(err); }
+
+        prompt([
+            {
+                type: 'input',
+                name: 'newRole',
+                message: 'What role would you like to add? '
+            },
+            {
+                type: 'input',
+                name: 'roleSal',
+                message: 'What is the salary for this role? '
+            },
+            {
+                type: 'list',
+                name: 'roleDep',
+                message: 'Where is those role assigned? ',
+                choices:
+                    res.map((department) => {
+                        return {
+                            name: department.name,
+                            value: department.id
+                        }
+                    })
+            }
 
 
+        ]).then(res => {
+            db.query(`INSERT INTO role (title, salary, department_id) VALUES ("${res.newRole}", "${res.roleSal}", "${res.roleDep}")`, (err, res) => {
+                if (err) { console.log(err); }
+                console.log('\n');
+                console.log('Succesfully added new role.');
+                console.log('\n');
+                mainMenu();
+
+            });
+
+        })
+
+
+
+
+    })
 
 }
+
+
+
 mainMenu();
